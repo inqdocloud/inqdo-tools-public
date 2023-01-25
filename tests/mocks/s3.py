@@ -1,5 +1,4 @@
 import json
-import tempfile
 
 import boto3
 import pytest
