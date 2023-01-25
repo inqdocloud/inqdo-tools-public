@@ -4,7 +4,6 @@ Config client
 """
 
 import boto3
-
 from inqdo_tools.utils.error import ErrorHandler
 
 
