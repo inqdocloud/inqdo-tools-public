@@ -1,0 +1,14 @@
+pytest==6.2.1
+coverage==5.3.1
+pytest-cov==2.11.0
+flake8==5.0.4
+isort==5.7.0
+black==22.8.0
+Sphinx==3.4.3
+sphinx-rtd-theme
+moto==4.1.0
+docker==4.4.1
+click==8.0.4
+Jinja2<3.1
+python-jose
+mock==5.0.1

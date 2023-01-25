@@ -1,0 +1,46 @@
+name: CI
+
+env:
+  DOCKER_BUILDKIT: 1
+  COMPOSE_DOCKER_CLI_BUILD: 1
+
+on:
+  pull_request:
+    branches: [ "master" ]
+    paths-ignore: [ "docs/**" ]
+
+jobs:
+  flake8:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Install flake8
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8
+      - name: Lint with flake8
+        run: flake8 --per-file-ignores='inqdo_tools/src/inqdo_tools/__init__.py':F401
+  pytest:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v2
+
+      - name: Build the Stack
+        run:  docker-compose -f docker-compose.yml build
+
+      - name: Run the Stack
+        run:  docker-compose -f docker-compose.yml up -d
+
+      - name: Run unit tests
+        run:  docker-compose -f docker-compose.yml exec -T inqdo-tools pytest
+
+      - name: Tear down the Stack
+        run:  docker-compose -f docker-compose.yml down

@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  inqdo_tools:
+    build:
+      context: .
+      dockerfile: Dockerfile-inqdo_tools
+    image: inqdo_tools:latest
+    container_name: inqdo_tools
+    volumes:
+      - ./inqdo_tools:/var/task
+      - ./tests:/var/task/tests
+      - ./docs:/usr/src/app/docs
+    env_file:
+      - ./inqdo_tools/inqdo_tools.env
+    environment:
+      - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
+      - AWS_DEFAULT_REGION=eu-west-1
+    ports:
+      - 9000:8080
+  inqdo-watcher:
+    image: public.ecr.aws/w3i8r4e2/inqdo-tools-watcher:latest
+    container_name: debug-watcher
+    privileged: true
+    environment:
+      - RELOAD_DELAY=2
+      - RELOAD_CONTAINERS=inqdo_tools # Specify container service names comma separated.
+      - RESTART_TIMEOUT=1
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - ".:/code"

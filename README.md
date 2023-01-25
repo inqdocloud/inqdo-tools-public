@@ -1,0 +1,95 @@
+# InQdo Tools Public
+
+[![Actions Status](https://github.com/inQdo/inqdo-tools-public/workflows/CI/badge.svg)](https://github.com/inQdo/inqdo-tools-public/actions)
+
+To develop with this package, Docker is required. The following instructions will guide you on how to build the container, test, and perform linting and documentation tasks.
+
+## Building the container
+To build the test environment and run the container in the background, run:
+
+```sh
+$ docker-compose up -d --build
+```
+
+Alternatively, you can use the script: `exec-build.sh` located in the root directory. 
+
+
+## Testing
+We are using `pytest` for testing the methods.
+The library `moto` is used for mocking aws infrastructure `https://docs.getmoto.org/`
+
+
+#### Unit tests
+To test the methods you can use `pytest`.
+
+```sh
+$ docker-compose exec inqdo-tools pytest
+```
+
+Alternatively, you can use the script: `exec-pytest.sh` located in the root directory. 
+
+#### Code coverage report
+To get a code coverage report you can use this commands:
+
+```sh
+$ docker-compose exec inqdo-tools pytest --cov=.
+$ ## With HTML report
+$ docker-compose exec inqdo-tools pytest --cov=. --cov-report html
+$ open tests/htmlcov/index.html
+```
+
+Alternatively, you can use the script: `exec-code-coverage.sh` located in the root directory.
+
+
+## Lint
+
+To run flake8:
+
+```sh
+$ # Run flake8
+$ docker-compose exec inqdo-tools flake8
+```
+
+To run black to automatically format code:
+
+```sh
+$ # Run black to automatically format code
+$ docker-compose exec inqdo-tools black .
+```
+
+To sort Python imports:
+
+```sh
+$ # Sort Python imports
+$ docker-compose exec inqdo-tools isort .
+```
+
+Alternatively, you can use the script: `exec-lint.sh` located in the root directory.
+
+### Local development
+
+For local development, you can launch `Dockerfile-inqdo_tools` via `docker-compose-yml` in the src directory at `inqdo_tools/src/docker-compose.yml`.
+
+You can easliy run script `run.sh` in `inqdo_tools/src/scripts`.
+
+Use the script `invoke-lambda.sh` located in the same direcory as `run.sh` to invoke the Ddocker container.
+This scripts expects a parameter (port)
+
+Example: `. invoke-lambda.sh 9000`
+
+`inqdo_tools/src/inqdo_tools/main.py` will be invoked. Use this file for testing your code.
+
+
+## Docs
+To generate the documentation, run:
+
+```sh
+$ # Auto generate rst files for the docs. The last argument is for ignoring the debug.py file from the docs
+$ docker-compose exec inqdo-tools sphinx-apidoc -f -o docs/source inqdo_tools inqdo_tools/debug.py
+$ # Build the documentation
+$ docker-compose exec inqdo-tools make html
+$ # Open the docs
+$ open docs/build/html/index.html
+```
+
+Alternatively, you can use the script: `exec-build-docs.sh` located in the root directory.

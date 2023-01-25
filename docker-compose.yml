@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  inqdo-tools:
+    build:
+      context: .
+      dockerfile: ./compose/inqdo-tools/Dockerfile
+    image: inqdo-tools:latest
+    container_name: inqdo-tools
+    environment:
+      - inqdo-test=True
+    volumes:
+      - ./inqdo_tools/src/inqdo_tools:/usr/src/app/inqdo_tools
+      - ./tests:/usr/src/app/tests
+      - ./docs:/usr/src/app/docs

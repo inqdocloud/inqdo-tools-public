@@ -1,0 +1,5 @@
+# .coveragerc to control coverage.py
+
+[report]
+omit =
+    inqdo_tools/src/inqdo_tools/main.py

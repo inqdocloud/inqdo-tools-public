@@ -1,0 +1,57 @@
+on:
+  push:
+    branches:
+    - master
+    paths:
+    - 'inqdo_tools/**'
+
+name: Build and push inQdo Dev Tools containert
+
+jobs:
+  deploy:
+    name: inQdo Tools Container
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.AWS_GITHUB_ROLE }}
+          aws-region: eu-west-1
+
+      - name: Login ECR
+        run: |
+          aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/w3i8r4e2
+
+      - name: Build & Push - inQdo Tools watcher
+        id: build-image-watcher
+        run: |
+          cd inqdo_tools
+          docker build -f Dockerfile.Watcher -t inqdo-tools-watcher .
+          docker tag inqdo-tools-watcher public.ecr.aws/w3i8r4e2/inqdo-tools-watcher:latest
+          echo "Pushing image to ECR..."
+          docker push public.ecr.aws/w3i8r4e2/inqdo-tools-watcher:latest
+
+      - name: Build - Docs
+        run: |
+          docker-compose up -d --build
+          docker-compose exec -T inqdo-tools sphinx-apidoc -f -o docs/source inqdo_tools inqdo_tools/debug.py
+          docker-compose exec -T inqdo-tools make html
+      - name: Upload - Docs to S3
+        run:
+          aws s3 cp docs/build/html/ s3://inqdo-tools-documentation/ --recursive
+
+      # - name: Slack Notification
+      #   uses: rtCamp/action-slack-notify@v2
+      #   env:
+      #     SLACK_CHANNEL: aws_general
+      #     SLACK_COLOR: ${{ job.status }}
+      #     SLACK_ICON_EMOJI: ':dumpster-fire:'
+      #     SLACK_MESSAGE: 'inQdo Tools & API container builder workflow completed :rocket:'
+      #     SLACK_TITLE: inQdo Tools & API Container build status
+      #     SLACK_FOOTER: inQdo Cloud
+      #     SLACK_USERNAME: BuildBot
+      #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}

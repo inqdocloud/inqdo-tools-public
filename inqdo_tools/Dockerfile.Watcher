@@ -1,0 +1,11 @@
+FROM python:3.8
+
+RUN apt-get -y update && apt -y install docker.io && curl -L "https://github.com/docker/compose/releases/download/1.25.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && chmod +x /usr/local/bin/docker-compose
+
+RUN pip install watchdog && pip install docker && pip install six
+
+COPY ./watch /inqdowatcher
+
+WORKDIR /inqdowatcher
+
+ENTRYPOINT python -u main.py
