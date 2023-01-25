@@ -5,7 +5,7 @@ on:
     paths:
     - 'inqdo_tools/**'
 
-name: Build and push inQdo Dev Tools container!
+name: Build and push inQdo Tools container
 
 jobs:
   deploy:
