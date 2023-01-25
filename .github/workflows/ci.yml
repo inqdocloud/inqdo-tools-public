@@ -43,7 +43,7 @@ jobs:
         run:  docker-compose -f docker-compose.yml exec -T inqdo-tools pytest
 
       - name: Run Code coverage
-        run: docker-compose exec inqdo-tools pytest --cov-fail-under=50 --cov=.
+        run: docker-compose exec -T inqdo-tools pytest --cov-fail-under=50 --cov=.
 
       - name: Tear down the Stack
         run:  docker-compose -f docker-compose.yml down
