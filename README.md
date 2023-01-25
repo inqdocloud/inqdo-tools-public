@@ -16,7 +16,7 @@ Alternatively, you can use the script: `exec-build.sh` located in the root direc
 
 ## Testing
 We are using `pytest` for testing the methods.
-The library `moto` is used for mocking aws infrastructure `https://docs.getmoto.org/`
+The library `moto` is used for mocking aws infrastructure [https://docs.getmoto.org/](https://docs.getmoto.org/)
 
 
 #### Unit tests

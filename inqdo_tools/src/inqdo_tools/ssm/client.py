@@ -77,7 +77,7 @@ class ParameterStore(SSMClient):
             for p in page["Parameters"]:
                 name = p["Name"]
                 if name.startswith("/"):
-                    paths = name[len(self._prefix) :].split("/")
+                    paths = name[len(self._prefix) :].split("/")  # noqa
                 else:
                     paths = name.split("/")
                 self._update_keys(self._keys, paths)
