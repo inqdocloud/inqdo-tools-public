@@ -2,8 +2,8 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'inqdo_tools/**'
+    # paths:
+    #   - 'inqdo_tools/**'
 
 name: Build and push inQdo Tools container
 
@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@master
+        uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: eu-west-1
