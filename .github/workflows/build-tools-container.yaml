@@ -4,6 +4,7 @@ on:
       - main
     paths:
       - 'inqdo_tools/**'
+    types: [closed]
 
 name: Build and push inQdo Tools container
 
