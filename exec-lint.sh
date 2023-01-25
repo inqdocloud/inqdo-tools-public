@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Run flake8
 docker-compose exec inqdo-tools flake8
 # Run black to automatically format code

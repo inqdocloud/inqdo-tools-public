@@ -11,7 +11,7 @@ on:
 
 jobs:
   flake8:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Code Repository
         uses: actions/checkout@v2
@@ -27,8 +27,8 @@ jobs:
           pip install flake8
       - name: Lint with flake8
         run: flake8 --per-file-ignores='inqdo_tools/src/inqdo_tools/__init__.py':F401
-  pytest:
-    runs-on: ubuntu-20.04
+  pytest-codecoverage:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Code Repository
         uses: actions/checkout@v2
@@ -41,6 +41,9 @@ jobs:
 
       - name: Run unit tests
         run:  docker-compose -f docker-compose.yml exec -T inqdo-tools pytest
+
+      - name: Run Code coverage
+        run: docker-compose exec -T inqdo-tools pytest --cov-fail-under=50 --cov=.
 
       - name: Tear down the Stack
         run:  docker-compose -f docker-compose.yml down
