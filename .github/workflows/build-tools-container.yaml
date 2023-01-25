@@ -1,9 +1,9 @@
 on:
   push:
     branches:
-    - main
+      - main
     paths:
-    - 'inqdo_tools/**'
+      - 'inqdo_tools/**'
 
 name: Build and push inQdo Tools container
 
