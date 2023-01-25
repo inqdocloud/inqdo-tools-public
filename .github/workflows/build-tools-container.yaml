@@ -5,16 +5,15 @@ on:
     paths:
     - 'inqdo_tools/**'
 
-permissions:
-  id-token: write
-  contents: read
-
 name: Build and push inQdo Dev Tools container
 
 jobs:
   deploy:
     name: inQdo Tools Container
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
 
     steps:
       - name: Checkout
