@@ -3,8 +3,8 @@ from setuptools import find_packages, setup
 setup(
     name="inqdo-tools",
     description="InQdo Tools Python library",
-    url="https://github.com/inQdo/aws_inqdo-tools",
-    version="0.1",
+    url="https://github.com/inqdocloud/inqdo-tools-public",
+    version="1.0.0",
     author="InQdo",
     license='LICENSE.txt',
     author_email="barry.buitelaar@inqdo.com",
