@@ -1,6 +1,6 @@
 # InQdo Tools Public
 
-[![Actions Status](https://github.com/inQdo/inqdo-tools-public/workflows/CI/badge.svg)](https://github.com/inQdo/inqdo-tools-public/actions)
+[![CI](https://github.com/inqdocloud/inqdo-tools-public/actions/workflows/ci.yml/badge.svg)](https://github.com/inqdocloud/inqdo-tools-public/actions/workflows/ci.yml)
 
 To develop with this package, Docker is required. The following instructions will guide you on how to build the container, test, and perform linting and documentation tasks.
 
