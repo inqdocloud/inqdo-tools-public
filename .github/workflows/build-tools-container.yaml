@@ -1,5 +1,5 @@
 on:
-  push:
+  pull_request:
     branches:
       - main
     paths:
@@ -14,7 +14,6 @@ jobs:
     permissions:
       id-token: write
       contents: read
-
     steps:
       - name: Checkout
         uses: actions/checkout@v2
