@@ -104,3 +104,13 @@ To run this image, use the command:
 ```sh
 $ act pull_request -P ubuntu-latest=lucasalt/act_base:latest
 ```
+
+
+### Install
+To install inQdo Tools locally, run the following command in your terminal:
+
+```sh
+$ pip install "git+https://github.com/inqdocloud/inqdo-tools-public.git@v1.0.0#egg=inqdo-tools&subdirectory=inqdo_tools/src"
+```
+
+This command will install the inQdo Tools package from the specified git repository and version (v1.0.0) into your local environment.
