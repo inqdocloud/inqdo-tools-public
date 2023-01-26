@@ -36,16 +36,28 @@ class S3Client(object):
         self.uploaded = 0
 
     @ErrorHandler.base_exception
-    def list_objects(self) -> dict:
+    def list_objects(self, **kwargs) -> dict:
         """List objects
 
         Gives back the contents of the bucket.
 
+        :param prefix: An optional :class:`prefix` argument, which will determine
+            the prefix of the object.
+        :type prefix: str, optional
+
         :rtype: list
         """
-        response = self.s3_client.list_objects(
-            Bucket=self.bucket_name,
-        )
+
+        if "prefix" in kwargs:
+            prefix = kwargs["prefix"]
+            response = self.s3_client.list_objects(
+                Bucket=self.bucket_name,
+                Prefix=prefix
+            )
+        else:
+            response = self.s3_client.list_objects(
+                Bucket=self.bucket_name,
+            )
 
         if "Contents" in response:
             return response["Contents"]
