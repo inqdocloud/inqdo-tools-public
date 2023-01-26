@@ -18,6 +18,23 @@ def test_list_object(s3_client, s3_create_bucket, s3_put_object_txt):
     assert found_object == ["test-file.txt"]
 
 
+# LIST OBJECT WITH PREFIX
+def test_list_object_with_prefix(s3_client, s3_create_bucket, s3_put_object_txt):
+    s3_client = S3Client(bucket_name="s3-test")
+
+    response = s3_client.list_objects(
+        prefix="test"
+    )
+
+    found_object = [
+        s3_object["Key"]
+        for s3_object in response
+        if s3_object["Key"] == "test-file.txt"
+    ]
+
+    assert found_object == ["test-file.txt"]
+
+
 # GET OBJECT TXT
 def test_get_object_txt(s3_client, s3_create_bucket, s3_put_object_txt):
     s3_client = S3Client(bucket_name="s3-test")
