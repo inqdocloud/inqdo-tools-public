@@ -95,7 +95,7 @@ $ open docs/build/html/index.html
 Alternatively, you can use the script: `exec-build-docs.sh` located in the root directory.
 
 
-### Test Github Actions Localy
+### Test Github Actions Locally
 To test Github Actions locally, you can use the tool `act` found at: [https://github.com/nektos/act](https://github.com/nektos/act)
 
  However, `act` does not natively support the `docker-compose` command. To overcome this, you can use the custom image : [https://github.com/lucasctrl/act_base](https://github.com/lucasctrl/act_base)
