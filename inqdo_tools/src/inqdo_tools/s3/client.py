@@ -54,6 +54,7 @@ class S3Client(object):
                 Bucket=self.bucket_name,
                 Prefix=prefix
             )
+
         else:
             response = self.s3_client.list_objects(
                 Bucket=self.bucket_name,
