@@ -127,9 +127,7 @@ class CognitoClient(object):
         return data
 
     @ErrorHandler.base_exception
-    def user_create(
-        self, username: str, temporary_password: str, attributes: list
-    ) -> dict:
+    def user_create(self, username: str, temporary_password: str, attributes: list) -> dict:
         """
         Creates a new user.
 
@@ -180,13 +178,9 @@ class CognitoClient(object):
         :return: Dictionary containing user information.
         :rtype: dict
         """
-        response = self.cognito.admin_get_user(
-            UserPoolId=self.user_pool_id, Username=username
-        )
+        response = self.cognito.admin_get_user(UserPoolId=self.user_pool_id, Username=username)
 
-        groups = self.cognito.admin_list_groups_for_user(
-            UserPoolId=self.user_pool_id, Username=username
-        )
+        groups = self.cognito.admin_list_groups_for_user(UserPoolId=self.user_pool_id, Username=username)
 
         groups_list = []
         for group in groups["Groups"]:
@@ -209,9 +203,7 @@ class CognitoClient(object):
         PaginationToken = None
         while True:
             if PaginationToken:
-                response = self.cognito.list_users(
-                    UserPoolId=self.user_pool_id, PaginationToken=PaginationToken
-                )
+                response = self.cognito.list_users(UserPoolId=self.user_pool_id, PaginationToken=PaginationToken)
             else:
                 response = self.cognito.list_users(
                     UserPoolId=self.user_pool_id,
@@ -238,11 +230,24 @@ class CognitoClient(object):
         :return: List of users in the specified group.
         :rtype: list
         """
-        response = self.cognito.list_users_in_group(
-            UserPoolId=self.user_pool_id, GroupName=group_name
-        )
+        r = {"Users": []}
+        NextToken = None
+        while True:
+            if NextToken:
+                response = self.cognito.list_users_in_group(
+                    UserPoolId=self.user_pool_id, GroupName=group_name, NextToken=NextToken
+                )
+            else:
+                response = self.cognito.list_users_in_group(UserPoolId=self.user_pool_id, GroupName=group_name)
 
-        return response["Users"]
+            for user in response["Users"]:
+                r["Users"].append(user)
+            if "NextToken" in response.keys():
+                NextToken = response["NextToken"]
+            else:
+                break
+
+        return r["Users"]
 
     @ErrorHandler.base_exception
     def user_get_all_with_group(self) -> dict:
@@ -259,9 +264,7 @@ class CognitoClient(object):
         PaginationToken = None
         while True:
             if PaginationToken:
-                response = self.cognito.list_users(
-                    UserPoolId=self.user_pool_id, PaginationToken=PaginationToken
-                )
+                response = self.cognito.list_users(UserPoolId=self.user_pool_id, PaginationToken=PaginationToken)
             else:
                 response = self.cognito.list_users(
                     UserPoolId=self.user_pool_id,
@@ -313,9 +316,7 @@ class CognitoClient(object):
         :return: Dictionary containing group information.
         :rtype: dict
         """
-        response = self.cognito.get_group(
-            UserPoolId=self.user_pool_id, GroupName=group_name
-        )
+        response = self.cognito.get_group(UserPoolId=self.user_pool_id, GroupName=group_name)
 
         return response["Group"]
 
@@ -363,9 +364,7 @@ class CognitoClient(object):
         """
 
         for user in users:
-            self.cognito.admin_add_user_to_group(
-                UserPoolId=self.user_pool_id, GroupName=group_name, Username=user
-            )
+            self.cognito.admin_add_user_to_group(UserPoolId=self.user_pool_id, GroupName=group_name, Username=user)
         data = {"Success": "Added users to group."}
 
         return data
@@ -385,9 +384,7 @@ class CognitoClient(object):
         :rtype: dict
         """
         for user in users:
-            self.cognito.admin_remove_user_from_group(
-                UserPoolId=self.user_pool_id, GroupName=group_name, Username=user
-            )
+            self.cognito.admin_remove_user_from_group(UserPoolId=self.user_pool_id, GroupName=group_name, Username=user)
         data = {"Success": "Removed users from group."}
 
         return data
@@ -406,9 +403,7 @@ class CognitoClient(object):
         :return: Dictionary with the result of the operation.
         :rtype: dict
         """
-        current_groups = self.cognito.admin_list_groups_for_user(
-            UserPoolId=self.user_pool_id, Username=username
-        )
+        current_groups = self.cognito.admin_list_groups_for_user(UserPoolId=self.user_pool_id, Username=username)
 
         for entry in current_groups["Groups"]:
             self.cognito.admin_remove_user_from_group(
@@ -418,9 +413,7 @@ class CognitoClient(object):
             )
 
         for group in groups:
-            self.cognito.admin_add_user_to_group(
-                UserPoolId=self.user_pool_id, GroupName=group, Username=username
-            )
+            self.cognito.admin_add_user_to_group(UserPoolId=self.user_pool_id, GroupName=group, Username=username)
 
         data = {"Success": "Added user to groups."}
 

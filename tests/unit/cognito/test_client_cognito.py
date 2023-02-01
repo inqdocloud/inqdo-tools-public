@@ -129,6 +129,38 @@ def test_user_get(
     assert result["Username"] == "test_user"
 
 
+#  USER GET ALL
+def test_user_get_all(
+    cognito_client, cognito_create_user_pool, cognito_create_multiple_users_groups,
+):
+    user_pool_id = cognito_create_user_pool["UserPool"]["Id"]
+    cognito = CognitoClient(user_pool_id=user_pool_id)
+
+    result = cognito.user_get_all()
+
+    filtered_users = [
+        {"Username": user["Username"]} for user in result
+    ]
+
+    assert len(filtered_users) == 150
+
+
+#  USER GET ALL IN GROUP
+def test_user_get_all_in_group(
+    cognito_client, cognito_create_user_pool, cognito_create_multiple_users_groups,
+):
+    user_pool_id = cognito_create_user_pool["UserPool"]["Id"]
+    cognito = CognitoClient(user_pool_id=user_pool_id)
+
+    result = cognito.user_get_all_in_group(group_name="test_group")
+
+    filtered_users = [
+        {"Username": user["Username"]} for user in result
+    ]
+
+    assert len(filtered_users) == 150
+
+
 #  USER GET WITH GROUP INFO
 def test_user_get_with_group_info(
     cognito_client,
@@ -148,7 +180,7 @@ def test_user_get_with_group_info(
 
 # USER GET ALL WITH GROUP INFO
 def test_user_get_all_with_group_info(
-    cognito_client, cognito_create_user_pool, cognito_create_users_in_groups
+    cognito_client, cognito_create_user_pool, cognito_create_multiple_users_groups
 ):
     user_pool_id = cognito_create_user_pool["UserPool"]["Id"]
     cognito = CognitoClient(user_pool_id=user_pool_id)
@@ -160,9 +192,9 @@ def test_user_get_all_with_group_info(
     ]
     user_groups = {user["Username"]: user["Groups"] for user in result}
 
-    assert len(filtered_users) == 2
-    assert "test_group_user-1" in user_groups["user-1"]
-    assert "test_group_user-2" in user_groups["user-2"]
+    assert len(filtered_users) == 150
+    assert "test_group_1" in user_groups["user-1"]
+    assert "test_group_2" in user_groups["user-2"]
 
 
 # GROUP CREATE
