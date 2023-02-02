@@ -1,4 +1,5 @@
 import os
+from typing import Any
 
 
 def newline_logger(value, prefix=False):
@@ -6,10 +7,12 @@ def newline_logger(value, prefix=False):
     if prefix:
         v = f"[{prefix}] - {value}"
 
+    seperator = "=" * len(v)
+
     print("\n")
-    print("===================")
+    print(seperator)
     print(v)
-    print("===================")
+    print(seperator)
     print("\n")
 
 
@@ -40,3 +43,60 @@ class InQdoLogger(object):
     def print(self, value):
         if self.enable_log:
             newline_logger(value=value, prefix=self.prefix)
+
+
+class SequenceLogger(object):
+    """
+    A class for logging sequences of events or values.
+
+    :param name: A string that indicates the loggers name.
+    :type name: str
+
+    Attributes:
+        logs (List[Tuple[str, Any]]): The list of logs stored as (prefix, value) pairs.
+        sequence_counter (int): The counter for the sequence number of each log.
+
+    Methods:
+        collect_logs(prefix: str, value: Any): Adds a log to the logs list with the given prefix and value.
+        print_logs(): Prints all logs in a formatted manner with a header and footer.
+    """
+
+    def __init__(self, name):
+        """
+        Initializes a new instance of the SequenceLogger class.
+
+        :param name: A string that indicates the loggers name.
+        :type name: str
+        """
+        self.name = name
+        self.logs = []
+        self.sequence_counter = 1
+
+    def collect_logs(self, prefix: str, value: Any):
+        """
+        Adds a log to the logs list with the given prefix and value.
+
+        :param prefix: The prefix of the log.
+        :type prefix: str
+
+        :param value: The value of the log.
+        :type value: str
+        """
+        self.logs.append((f"[{self.sequence_counter}] {prefix}", value))
+        self.sequence_counter += 1
+
+    def print_logs(self):
+        """
+        Prints all logs in a formatted manner with a header and footer based on the sequence name.
+        """
+        longest_string = 10
+        margin = 2
+        seperator = "=" * int(longest_string / 2 + margin)
+        end = "=" * len(self.name)
+
+        print(f"{seperator} {self.name} {seperator}")
+        for log in self.logs:
+            prefix, value = log
+            newline_logger(value, prefix)
+
+        print(f"{seperator}{end}{seperator}")
