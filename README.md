@@ -2,6 +2,9 @@
 
 [![CI](https://github.com/inqdocloud/inqdo-tools-public/actions/workflows/ci.yml/badge.svg)](https://github.com/inqdocloud/inqdo-tools-public/actions/workflows/ci.yml)
 
+## Documentation
+http://inqdo-tools-documentation.s3-website-eu-west-1.amazonaws.com/index.html
+
 To develop with this package, Docker is required. The following instructions will guide you on how to build the container, test, and perform linting and documentation tasks.
 
 ## Building the container
