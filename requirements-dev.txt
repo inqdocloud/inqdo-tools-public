@@ -12,3 +12,4 @@ click==8.0.4
 Jinja2<3.1
 python-jose
 mock==5.0.1
+pyyaml

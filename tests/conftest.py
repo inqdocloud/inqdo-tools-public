@@ -7,6 +7,7 @@ from moto import mock_sts
 from .mocks.cognito import *  # noqa F403
 from .mocks.dynamodb import *  # noqa F403
 from .mocks.s3 import *  # noqa F403
+from .mocks.ssm import *  # noqa F403
 
 
 @pytest.fixture
