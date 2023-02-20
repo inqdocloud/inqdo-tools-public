@@ -90,6 +90,12 @@ class SequenceLogger(object):
         self.sequence_counter += 1
 
     def collect_batch(self, batch_list: List[Tuple[str, str]]):
+        """
+        Adds a batch of logs to the logs list with the given prefix and value in each tuple.
+
+        :param batch_list: A list of tuples, where each tuple contains the prefix and value of a log.
+        :type batch_list: List[Tuple[str, str]]
+        """
         for item in batch_list:
             prefix, value = item
 
