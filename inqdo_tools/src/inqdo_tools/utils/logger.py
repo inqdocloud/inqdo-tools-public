@@ -1,5 +1,5 @@
 import os
-from typing import Any
+from typing import Any, Union
 
 
 def newline_logger(value, prefix=False):
@@ -100,3 +100,30 @@ class SequenceLogger(object):
             newline_logger(value, prefix)
 
         print(f"{seperator}{end}{seperator}")
+
+
+class SaveSequenceLogger(object):
+    """
+    A class that allows for a separate SequenceLogger instance to be passed in
+    and have its collect_logs method called if the instance is not None.
+    """
+    def __init__(self, sequence_logger: Union[SequenceLogger, None]):
+        """
+        :param sequence_logger: An instance of the SequenceLogger class.
+        :type sequence_logger: SequenceLogger
+        """
+        self.sequence_logger = sequence_logger
+
+    def collect_logs(self, prefix: str, value: Any):
+        """
+        Calls the collect_logs method of the sequence_logger instance with the given prefix and value, if the
+        sequence_logger instance is not None.
+
+        :param prefix: The prefix of the log.
+        :type prefix: str
+
+        :param value: The value of the log.
+        :type value: str
+        """
+        if self.sequence_logger:
+            self.sequence_logger.collect_logs(prefix=prefix, value=value)

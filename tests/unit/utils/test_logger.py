@@ -1,7 +1,7 @@
 import io
 import sys
 
-from inqdo_tools.utils.logger import SequenceLogger
+from inqdo_tools.utils.logger import SaveSequenceLogger, SequenceLogger
 
 
 def test_collect_logs():
@@ -17,6 +17,20 @@ def test_collect_logs():
 def test_sequence_logger_with_long_name():
     seq_logger = SequenceLogger("Test Logger with a Very Long Name")
     seq_logger.collect_logs("Log 1", "Value 1")
+
+    captured_output = io.StringIO()
+    sys.stdout = captured_output
+
+    seq_logger.print_logs()
+
+    assert "==== Test Logger with a Very Long Name ====" in captured_output.getvalue()
+
+    sys.stdout = sys.__stdout__
+
+
+def test_save_sequence_logger_with_long_name():
+    seq_logger = SequenceLogger("Test Logger with a Very Long Name")
+    SaveSequenceLogger(sequence_logger=seq_logger).collect_logs("Log 1", "Value 1")
 
     captured_output = io.StringIO()
     sys.stdout = captured_output

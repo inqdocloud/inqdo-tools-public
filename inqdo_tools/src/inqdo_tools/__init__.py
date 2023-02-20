@@ -23,7 +23,12 @@ from .utils.common import (
     to_json,
 )
 from .utils.get_client import Client
-from .utils.logger import InQdoLogger, SequenceLogger, newline_logger
+from .utils.logger import (
+    InQdoLogger,
+    SaveSequenceLogger,
+    SequenceLogger,
+    newline_logger,
+)
 from .utils.response import Response
 
 __author__ = "inQdo Cloud (info@inqdo.cloud)"
@@ -50,6 +55,7 @@ __all__ = (
     "ParameterStore",
     "Response",
     "S3Client",
+    "SaveSequenceLogger"
     "SequenceLogger",
     "to_json",
 )
