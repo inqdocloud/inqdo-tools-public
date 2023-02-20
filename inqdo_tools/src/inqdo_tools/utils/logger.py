@@ -1,5 +1,5 @@
 import os
-from typing import Any, Union
+from typing import Any, List, Tuple, Union
 
 
 def newline_logger(value, prefix=False):
@@ -57,7 +57,7 @@ class SequenceLogger(object):
         sequence_counter (int): The counter for the sequence number of each log.
 
     Methods:
-        collect_logs(prefix: str, value: Any): Adds a log to the logs list with the given prefix and value.
+        collect_log(prefix: str, value: Any): Adds a log to the logs list with the given prefix and value.
         print_logs(): Prints all logs in a formatted manner with a header and footer.
     """
 
@@ -72,7 +72,7 @@ class SequenceLogger(object):
         self.logs = []
         self.sequence_counter = 1
 
-    def collect_logs(self, prefix: str, value: Any):
+    def collect_log(self, prefix: str, value: Any):
         """
         Adds a log to the logs list with the given prefix and value.
 
@@ -82,8 +82,30 @@ class SequenceLogger(object):
         :param value: The value of the log.
         :type value: str
         """
-        self.logs.append((f"[{self.sequence_counter}] {prefix}", value))
+        self.logs.append(self._format(
+            counter=self.sequence_counter,
+            prefix=prefix,
+            value=value
+        ))
         self.sequence_counter += 1
+
+    def collect_batch(self, batch_list: List[Tuple[str, str]]):
+        """
+        Adds a batch of logs to the logs list with the given prefix and value in each tuple.
+
+        :param batch_list: A list of tuples, where each tuple contains the prefix and value of a log.
+        :type batch_list: List[Tuple[str, str]]
+        """
+        for item in batch_list:
+            prefix, value = item
+
+            self.logs.append(self._format(
+                counter=self.sequence_counter,
+                prefix=prefix,
+                value=value
+            ))
+
+            self.sequence_counter += 1
 
     def print_logs(self):
         """
@@ -101,11 +123,15 @@ class SequenceLogger(object):
 
         print(f"{seperator}{end}{seperator}")
 
+    @staticmethod
+    def _format(counter: str, prefix: str, value: str) -> Tuple[str, str]:
+        return (f"[{counter}] {prefix}", value)
+
 
 class SaveSequenceLogger(object):
     """
     A class that allows for a separate SequenceLogger instance to be passed in
-    and have its collect_logs method called if the instance is not None.
+    and have its collect_log method called if the instance is not None.
     """
     def __init__(self, sequence_logger: Union[SequenceLogger, None]):
         """
@@ -114,9 +140,9 @@ class SaveSequenceLogger(object):
         """
         self.sequence_logger = sequence_logger
 
-    def collect_logs(self, prefix: str, value: Any):
+    def collect_log(self, prefix: str, value: Any):
         """
-        Calls the collect_logs method of the sequence_logger instance with the given prefix and value, if the
+        Calls the collect_log method of the sequence_logger instance with the given prefix and value, if the
         sequence_logger instance is not None.
 
         :param prefix: The prefix of the log.
@@ -126,4 +152,4 @@ class SaveSequenceLogger(object):
         :type value: str
         """
         if self.sequence_logger:
-            self.sequence_logger.collect_logs(prefix=prefix, value=value)
+            self.sequence_logger.collect_log(prefix=prefix, value=value)
