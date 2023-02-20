@@ -153,3 +153,14 @@ class SaveSequenceLogger(object):
         """
         if self.sequence_logger:
             self.sequence_logger.collect_log(prefix=prefix, value=value)
+
+    def collect_batch(self, batch_list: List[Tuple[str, str]]):
+        """
+        Calls the collect_batch method of the sequence_logger instance with the given prefix and value, if the
+        sequence_logger instance is not None.
+
+        :param batch_list: A list of tuples, where each tuple contains the prefix and value of a log.
+        :type batch_list: List[Tuple[str, str]]
+        """
+        if self.sequence_logger:
+            self.sequence_logger.collect_batch(batch_list=batch_list)
