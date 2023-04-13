@@ -48,7 +48,7 @@ class Invoker(object):
     :type delegate: Callable
     """
 
-    def __init__(self, event: dict, context=dict, file=str, delegate=Callable):
+    def __init__(self, event: dict, context: dict, file: str, delegate: Callable):
         """Constructor method"""
         self._REGEX_SEPARATOR = re.compile("[/\\\\]")
         self.logger = logging.getLogger(self._logger_name(__file__))
