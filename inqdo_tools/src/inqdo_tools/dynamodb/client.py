@@ -41,6 +41,10 @@ class DynamoDBClient(object):
         revert to the default, which is eu-west-1.
     :type region_name: str, optional
 
+    :param dynamodb_arn: An optional :class:`dynamodb_arn` argument, which will determine
+        the endpoint_url for DynamoDB
+    :type dynamodb_arn: str, optional
+
     :rtype: dict
     """
 
@@ -49,11 +53,14 @@ class DynamoDBClient(object):
 
         # Default region
         self.region_name = "eu-west-1"
+        self.dynamodb_arn = False
 
         if len(kwargs.items()) > 0:
             for key, value in kwargs.items():
                 if key == "region_name":
                     self.region_name = value
+                if key == "dynamodb_arn":
+                    self.dynamodb_arn = value
 
         # Test if table exists, otherwise throw a value error
         test_table_exists = boto3.client("dynamodb", region_name=self.region_name)
@@ -64,7 +71,10 @@ class DynamoDBClient(object):
                 f"Table: '{table_name}' does not exist. Did you create one yet and are you in the correct region?"
             )
 
-        self.dynamodb = boto3.resource("dynamodb", region_name=self.region_name)
+        if self.dynamodb_arn:
+            self.dynamodb = boto3.resource("dynamodb", region_name=self.region_name, endpoint_url=self.dynamodb_arn)
+        else:
+            self.dynamodb = boto3.resource("dynamodb", region_name=self.region_name)
         self.table_connection = self.dynamodb.Table(table_name)
 
     @ErrorHandler.base_exception
