@@ -1,8 +1,7 @@
 import io
 import sys
-import os
 
-from inqdo_tools.utils.logger import SequenceLogger, InQdoLogger
+from inqdo_tools.utils.logger import SaveSequenceLogger, SequenceLogger
 
 
 def test_collect_logs():
@@ -49,19 +48,4 @@ def test_save_sequence_logger_with_long_name():
 
     assert "==== Test Logger with a Very Long Name ====" in captured_output.getvalue()
 
-    sys.stdout = sys.__stdout__
-
-
-def test_inqdo_logger_with_prefix():
-    os.environ["LOG_TEST"] = "true"
-    inqdo_logger = InQdoLogger("TEST")
-    
-    captured_output = io.StringIO()
-    sys.stdout = captured_output
-
-    inqdo_logger.print("Test print")
-    
-    assert "[TEST] - Test print" in captured_output.getvalue()
-    assert inqdo_logger.prefix == "TEST"
-    
     sys.stdout = sys.__stdout__
