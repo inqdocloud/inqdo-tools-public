@@ -22,8 +22,14 @@ from .utils.common import (
     lower_key_dict,
     to_json,
 )
+from .utils.error import ErrorHandler
 from .utils.get_client import Client
-from .utils.logger import InQdoLogger, SequenceLogger, newline_logger
+from .utils.logger import (
+    InQdoLogger,
+    SaveSequenceLogger,
+    SequenceLogger,
+    newline_logger,
+)
 from .utils.response import Response
 
 __author__ = "inQdo Cloud (info@inqdo.cloud)"
@@ -41,6 +47,7 @@ __all__ = (
     "dict_get_forced",
     "dict_set",
     "Ec2",
+    "ErrorHandler",
     "EventsClient",
     "from_json",
     "InQdoLogger",
@@ -50,6 +57,7 @@ __all__ = (
     "ParameterStore",
     "Response",
     "S3Client",
+    "SaveSequenceLogger",
     "SequenceLogger",
     "to_json",
 )
