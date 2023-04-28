@@ -2,7 +2,7 @@ import io
 import sys
 import os
 
-from inqdo_tools.utils.logger import SaveSequenceLogger, SequenceLogger
+from inqdo_tools.utils.logger import SequenceLogger, InQdoLogger
 
 
 def test_collect_logs():
