@@ -2,7 +2,7 @@ from inqdo_tools.dynamodb.client import ComparisonOperators, DynamoDBClient
 
 
 # CREATE AND UPDATE
-def test_create_and_update(dynamodb_client, dynamodb_create_table):
+def test_create_and_update(dynamodb_resource, dynamodb_create_table):
 
     ddbclient = DynamoDBClient(table_name="movies-prd")
 
@@ -14,7 +14,7 @@ def test_create_and_update(dynamodb_client, dynamodb_create_table):
 
 
 # CREATE AND UPDATE MISSING PRIMARY KEY
-def test_create_and_update_missing_primary_key(dynamodb_client, dynamodb_create_table):
+def test_create_and_update_missing_primary_key(dynamodb_resource, dynamodb_create_table):
 
     ddbclient = DynamoDBClient(table_name="movies-prd")
 
@@ -27,7 +27,7 @@ def test_create_and_update_missing_primary_key(dynamodb_client, dynamodb_create_
 
 
 # CREATE AND UPDATE BATCH
-def test_create_and_update_batch(dynamodb_client, dynamodb_create_table):
+def test_create_and_update_batch(dynamodb_resource, dynamodb_create_table):
 
     ddbclient = DynamoDBClient(table_name="movies-prd")
 
@@ -43,7 +43,7 @@ def test_create_and_update_batch(dynamodb_client, dynamodb_create_table):
 
 # CREATE AND UPDATE BATCH MISSING PRIMARY KEY
 def test_create_and_update_batch_missing_primary_key(
-    dynamodb_client, dynamodb_create_table
+    dynamodb_resource, dynamodb_create_table
 ):
 
     ddbclient = DynamoDBClient(table_name="movies-prd")
@@ -59,7 +59,7 @@ def test_create_and_update_batch_missing_primary_key(
 
 
 # DELETE
-def test_delete(dynamodb_client, dynamodb_create_table, dynamodb_put_item):
+def test_delete(dynamodb_resource, dynamodb_create_table, dynamodb_put_item):
 
     ddbclient = DynamoDBClient(table_name="movies-prd")
 
@@ -71,7 +71,7 @@ def test_delete(dynamodb_client, dynamodb_create_table, dynamodb_put_item):
 
 
 # DELET BATCH
-def test_delete_batch(dynamodb_client, dynamodb_create_table):
+def test_delete_batch(dynamodb_resource, dynamodb_create_table):
 
     ddbclient = DynamoDBClient(table_name="movies-prd")
 
@@ -83,7 +83,7 @@ def test_delete_batch(dynamodb_client, dynamodb_create_table):
 
 
 # READ
-def test_read(dynamodb_client, dynamodb_create_table, dynamodb_put_item):
+def test_read(dynamodb_resource, dynamodb_create_table, dynamodb_put_item):
 
     ddbclient = DynamoDBClient(table_name="movies-prd")
 
@@ -96,7 +96,7 @@ def test_read(dynamodb_client, dynamodb_create_table, dynamodb_put_item):
 
 # READ SORT KEY
 def test_read_with_sort_key(
-    dynamodb_client, dynamodb_create_table_with_range_key, dynamodb_put_item_with_range
+    dynamodb_resource, dynamodb_create_table_with_range_key, dynamodb_put_item_with_range
 ):
 
     ddbclient = DynamoDBClient(table_name="movies-prd")
@@ -112,7 +112,7 @@ def test_read_with_sort_key(
 
 
 # READ ALL
-def test_read_all(dynamodb_client, dynamodb_create_table, dynamodb_put_item):
+def test_read_all(dynamodb_resource, dynamodb_create_table, dynamodb_put_item):
 
     ddbclient = DynamoDBClient(table_name="movies-prd")
 
@@ -123,7 +123,7 @@ def test_read_all(dynamodb_client, dynamodb_create_table, dynamodb_put_item):
 
 # QUERY
 def test_query_single(
-    dynamodb_client, dynamodb_create_table, dynamodb_put_item_for_query
+    dynamodb_resource, dynamodb_create_table, dynamodb_put_item_for_query
 ):
 
     ddbclient = DynamoDBClient(table_name="players-prd")
@@ -138,7 +138,7 @@ def test_query_single(
 
 # QUERY WITH SORT KEY
 def test_query_with_sort_key(
-    dynamodb_client, dynamodb_create_table, dynamodb_put_item_for_query
+    dynamodb_resource, dynamodb_create_table, dynamodb_put_item_for_query
 ):
 
     ddbclient = DynamoDBClient(table_name="players-prd")
@@ -156,7 +156,7 @@ def test_query_with_sort_key(
 
 # QUERY WITH SORT KEY
 def test_query_no_result(
-    dynamodb_client, dynamodb_create_table, dynamodb_put_item_for_query
+    dynamodb_resource, dynamodb_create_table, dynamodb_put_item_for_query
 ):
 
     ddbclient = DynamoDBClient(table_name="players-prd")
@@ -174,7 +174,7 @@ def test_query_no_result(
 
 # QUERY WITH MISSING KEYS
 def test_query_missing_keys(
-    dynamodb_client, dynamodb_create_table, dynamodb_put_item_for_query
+    dynamodb_resource, dynamodb_create_table, dynamodb_put_item_for_query
 ):
 
     ddbclient = DynamoDBClient(table_name="players-prd")
@@ -187,3 +187,152 @@ def test_query_missing_keys(
     )
 
     assert data["Error"] == "Something went wrong."
+
+
+# QUERY CLIENT
+def test_client_query_single(
+    dynamodb_client, dynamodb_client_create_table, dynamodb_client_put_item_for_query
+):
+    ddbclient = DynamoDBClient(
+        table_name="players-prd",
+        dynamodb_arn="arn:aws:dynamodb:eu-west-1:123456789012:table/*"
+    )
+
+    data = ddbclient.query(
+        table_primary_key="name",
+        query_value="inQdo",
+    )
+
+    assert data == [{"name": "inQdo", "number": "5"}]
+
+
+# QUERY CLIENT WITH SORT KEY
+def test_client_query_with_sort_key(
+    dynamodb_resource, dynamodb_client_create_table, dynamodb_client_put_item_for_query
+):
+    ddbclient = DynamoDBClient(
+        table_name="players-prd",
+        dynamodb_arn="arn:aws:dynamodb:eu-west-1:123456789012:table/*"
+    )
+
+    data = ddbclient.query(
+        table_primary_key="name",
+        value_primary_key="inQdo",
+        query_value="6",
+        table_sort_key="number",
+        comparison_operator=ComparisonOperators.LT,
+    )
+
+    assert data == [{"name": "inQdo", "number": "5"}]
+
+
+# QUERY CLIENT WITH SORT KEY
+def test_client_query_no_result(
+    dynamodb_resource, dynamodb_client_create_table, dynamodb_client_put_item_for_query
+):
+    ddbclient = DynamoDBClient(
+        table_name="players-prd",
+        dynamodb_arn="arn:aws:dynamodb:eu-west-1:123456789012:table/*"
+    )
+
+    data = ddbclient.query(
+        table_primary_key="name",
+        value_primary_key="inQdo",
+        query_value="6",
+        table_sort_key="number",
+        comparison_operator=ComparisonOperators.GE,
+    )
+
+    assert data == []
+
+
+# # QUERY CLIENT WITH MISSING KEYS
+def test_client_query_missing_keys(
+    dynamodb_resource, dynamodb_client_create_table, dynamodb_client_put_item_for_query
+):
+    ddbclient = DynamoDBClient(
+        table_name="players-prd",
+        dynamodb_arn="arn:aws:dynamodb:eu-west-1:123456789012:table/*"
+    )
+
+    data = ddbclient.query(
+        table_primary_key="name",
+        value_primary_key="inQdo",
+        query_value="1",
+        table_sort_key="number",
+    )
+
+    assert data["Error"] == "Something went wrong."
+
+
+# PUT ITEM
+def test_put_item(dynamodb_client, dynamodb_client_create_table):
+    ddbclient = DynamoDBClient(
+        table_name="movies-prd",
+        dynamodb_arn="arn:aws:dynamodb:eu-west-1:123456789012:table/*"
+    )
+
+    item = {
+        "movieName": "The Dark Knight",
+        "year": "2008",
+        "genre": "action"
+    }
+
+    response = ddbclient.put_item(
+        item=item
+    )
+
+    assert response == 200
+
+
+# GET ITEM
+def test_get_item(dynamodb_client, dynamodb_client_create_table, dynamodb_client_put_item):
+    ddbclient = DynamoDBClient(
+        table_name="movies-prd",
+        dynamodb_arn="arn:aws:dynamodb:eu-west-1:123456789012:table/*"
+    )
+
+    data = ddbclient.get_item(
+        key={"movieName": "The Dark Knight"}
+    )
+
+    assert data == {"movieName": "The Dark Knight", "year": "2008", "genre": "action"}
+
+
+# UPDATE ITEM
+def test_update_item(dynamodb_client, dynamodb_client_create_table, dynamodb_client_put_item):
+    ddbclient = DynamoDBClient(
+        table_name="movies-prd",
+        dynamodb_arn="arn:aws:dynamodb:eu-west-1:123456789012:table/*"
+    )
+
+    Key = {"movieName": "The Dark Knight"}
+    expression_attribute_names = {'#KEY': 'genre'}
+    expression_attribute_values = {
+        ':value': {
+            'S': 'romantic',
+        },
+    }
+    update_expression = 'SET #KEY = :value'
+    data = ddbclient.update_item(
+        key=Key,
+        expression_attribute_names=expression_attribute_names,
+        expression_attribute_values=expression_attribute_values,
+        update_expression=update_expression
+    )
+
+    assert data == {"movieName": "The Dark Knight", "year": "2008", "genre": "romantic"}
+
+
+# DELETE ITEM
+def test_delete_item(dynamodb_client, dynamodb_client_create_table, dynamodb_client_put_item):
+    ddbclient = DynamoDBClient(
+        table_name="movies-prd",
+        dynamodb_arn="arn:aws:dynamodb:eu-west-1:123456789012:table/*"
+    )
+
+    data = ddbclient.delete_item(
+        key={"movieName": "The Dark Knight"}
+    )
+
+    assert data == 200

@@ -8,6 +8,7 @@ from enum import Enum
 
 import boto3
 from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
 
 if "DEBUG_INQDO_TOOLS" in os.environ.keys():
     from utils.common import destruct_dict
@@ -41,9 +42,9 @@ class DynamoDBClient(object):
         revert to the default, which is eu-west-1.
     :type region_name: str, optional
 
-    :param dynamodb_arn: An optional :class:`dynamodb_arn` argument, which will determine
+    :param endpoint_url: An optional :class:`endpoint_url` argument, which will determine
         the endpoint_url for DynamoDB
-    :type dynamodb_arn: str, optional
+    :type endpoint_url: str, optional
 
     :rtype: dict
     """
@@ -53,12 +54,17 @@ class DynamoDBClient(object):
 
         # Default region
         self.region_name = "eu-west-1"
+        self.endpoint_url = False
         self.dynamodb_arn = False
+        self.serializer = TypeSerializer()
+        self.deserializer = TypeDeserializer()
 
         if len(kwargs.items()) > 0:
             for key, value in kwargs.items():
                 if key == "region_name":
                     self.region_name = value
+                if key == "endpoint_url":
+                    self.endpoint_url = value
                 if key == "dynamodb_arn":
                     self.dynamodb_arn = value
 
@@ -66,16 +72,20 @@ class DynamoDBClient(object):
         test_table_exists = boto3.client("dynamodb", region_name=self.region_name)
         try:
             test_table_exists.describe_table(TableName=table_name)
+            self.table_name = table_name
         except test_table_exists.exceptions.ResourceNotFoundException:
             raise ValueError(
                 f"Table: '{table_name}' does not exist. Did you create one yet and are you in the correct region?"
             )
 
-        if self.dynamodb_arn:
-            self.dynamodb = boto3.resource("dynamodb", region_name=self.region_name, endpoint_url=self.dynamodb_arn)
+        if self.endpoint_url:
+            self.dynamodb = boto3.resource("dynamodb", region_name=self.region_name, endpoint_url=self.endpoint_url)
+            self.table_connection = self.dynamodb.Table(table_name)
+        elif self.dynamodb_arn:
+            self.dynamodbclient = boto3.client("dynamodb", region_name=self.region_name)
         else:
             self.dynamodb = boto3.resource("dynamodb", region_name=self.region_name)
-        self.table_connection = self.dynamodb.Table(table_name)
+            self.table_connection = self.dynamodb.Table(table_name)
 
     @ErrorHandler.base_exception
     def create_and_update(self, data: dict) -> dict:
@@ -269,26 +279,57 @@ class DynamoDBClient(object):
             value_primary_key = kwargs["value_primary_key"]
             comparison_operator = kwargs["comparison_operator"]
 
-            comparison_functions = {
-                ComparisonOperators.EQ: Key(f"{table_primary_key}").eq(
-                    f"{value_primary_key}"
-                ),
-                ComparisonOperators.LT: Key(f"{table_sort_key}").lt(f"{query_value}"),
-                ComparisonOperators.LE: Key(f"{table_sort_key}").lte(f"{query_value}"),
-                ComparisonOperators.GE: Key(f"{table_sort_key}").gte(f"{query_value}"),
-                ComparisonOperators.GT: Key(f"{table_sort_key}").gt(f"{query_value}"),
-            }
-            return self.table_connection.query(
-                KeyConditionExpression=comparison_functions[ComparisonOperators.EQ]
-                & comparison_functions[comparison_operator],
-            )["Items"]
+            if (self.dynamodb_arn):
+                comparison_functions = {
+                    ComparisonOperators.EQ: f"{table_primary_key} = {value_primary_key}",
+                    ComparisonOperators.LT: f"{table_sort_key} < {query_value}",
+                    ComparisonOperators.LE: f"{table_sort_key} <= {query_value}",
+                    ComparisonOperators.GE: f"{table_sort_key} >= {query_value}",
+                    ComparisonOperators.GT: f"{table_sort_key} > {query_value}",
+                }
+                response = self.dynamodbclient.query(
+                    TableName=self.table_name,
+                    KeyConditionExpression=f"{comparison_functions[ComparisonOperators.EQ]} \
+                    AND {comparison_functions[comparison_operator]}"
+                )["Items"]
+                items = []
+                for item in response:
+                    items.append({k: self.deserializer.deserialize(v) for k, v in item.items()})
+                return items
+            else:
+                comparison_functions = {
+                    ComparisonOperators.EQ: Key(f"{table_primary_key}").eq(
+                        f"{value_primary_key}"
+                    ),
+                    ComparisonOperators.LT: Key(f"{table_sort_key}").lt(f"{query_value}"),
+                    ComparisonOperators.LE: Key(f"{table_sort_key}").lte(f"{query_value}"),
+                    ComparisonOperators.GE: Key(f"{table_sort_key}").gte(f"{query_value}"),
+                    ComparisonOperators.GT: Key(f"{table_sort_key}").gt(f"{query_value}"),
+                }
+                return self.table_connection.query(
+                    KeyConditionExpression=comparison_functions[ComparisonOperators.EQ]
+                    & comparison_functions[comparison_operator],
+                )["Items"]
 
-        return self.table_connection.query(
-            ExpressionAttributeValues={
-                f":{table_primary_key}": {"S": f"{query_value}"}
-            },
-            KeyConditionExpression=Key(f"{table_primary_key}").eq(f"{query_value}"),
-        )["Items"]
+        if (self.dynamodb_arn):
+            response = self.dynamodbclient.query(
+                TableName=self.table_name,
+                ExpressionAttributeValues={
+                    f":{table_primary_key}": self.serializer.serialize(query_value)
+                },
+                KeyConditionExpression=f"{table_primary_key} = :{table_primary_key}"
+            )["Items"]
+            items = []
+            for item in response:
+                items.append({k: self.deserializer.deserialize(v) for k, v in item.items()})
+            return items
+        else:
+            return self.table_connection.query(
+                ExpressionAttributeValues={
+                    f":{table_primary_key}": {"S": f"{query_value}"}
+                },
+                KeyConditionExpression=Key(f"{table_primary_key}").eq(f"{query_value}"),
+            )["Items"]
 
     @ErrorHandler.base_exception
     def read_all(self) -> list:
@@ -409,3 +450,89 @@ class DynamoDBClient(object):
         )
 
         return destructed_kwargs
+
+    def get_item(self, key: dict):
+        """Get item in database
+
+        :param key: Expects the key of the item to get from the table.
+        :type key: dict
+
+        :rtype: dict
+        """
+        key = {k: self.serializer.serialize(v) for k, v in key.items()}
+
+        response = self.dynamodbclient.get_item(
+            TableName=self.table_name,
+            Key=key,
+        )["Item"]
+        item = {k: self.deserializer.deserialize(v) for k, v in response.items()}  # type: ignore
+
+        return item
+
+    def put_item(self, item: dict):
+        """Put item in database
+
+        :param item: Expects the item to add to the table.
+        :type item: dict
+
+        :rtype: int
+        """
+        item = {k: self.serializer.serialize(v) for k, v in item.items()}
+
+        response = self.dynamodbclient.put_item(
+            TableName=self.table_name,
+            Item=item
+        )["ResponseMetadata"]["HTTPStatusCode"]
+
+        return response
+
+    def delete_item(self, key: dict):
+        """Delete item from database
+
+        :param key: Expects the key of the item to delete from the table.
+        :type key: dict
+
+        :rtype: int
+        """
+        key = {k: self.serializer.serialize(v) for k, v in key.items()}
+
+        response = self.dynamodbclient.delete_item(
+            TableName=self.table_name,
+            Key=key
+        )["ResponseMetadata"]["HTTPStatusCode"]
+
+        return response
+
+    def update_item(
+        self,
+        key: dict,
+        expression_attribute_names: dict,
+        expression_attribute_values: dict,
+        update_expression: str
+    ):
+        """Update item in database
+
+        :param key: Expects the key of the item to update in the table.
+        :type key: dict
+
+        :param expression_attribute_names: Expexts one or more substitution tokens for attribute names in an expression.
+        :type expression_attribute_names: dict
+
+        :param expression_attribute_values: Expects one or more values that can be substituted in an expression.
+        :type expression_attribute_values: dict
+
+        :param update_expression: Expects an expression that defines one or more attributes to be updated, the action
+        to be performed on them, and new values for them.
+        :type update_expression: dict
+        """
+        key = {k: self.serializer.serialize(v) for k, v in key.items()}
+
+        response = self.dynamodbclient.update_item(
+            TableName=self.table_name,
+            Key=key,
+            ExpressionAttributeNames=expression_attribute_names,
+            ExpressionAttributeValues=expression_attribute_values,
+            UpdateExpression=update_expression,
+            ReturnValues="ALL_NEW"
+        )
+        return {k: self.deserializer.deserialize(v) for k, v in response["Attributes"].items()}
