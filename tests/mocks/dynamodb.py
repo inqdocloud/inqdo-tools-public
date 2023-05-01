@@ -9,6 +9,7 @@ def dynamodb_resource(aws_credentials):
         conn = boto3.resource("dynamodb", region_name="eu-west-1")
         yield conn
 
+
 @pytest.fixture()
 def event_create_and_update():
     event = {
