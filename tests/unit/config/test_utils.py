@@ -41,11 +41,17 @@ def test_construct_managed_meta_data_fullevent():
 
     result = construct_managed_meta_data(event=event)
 
-    assert result == {"InputParameters": '{"Test": "Test"}'}
+    assert result == {'InputParameters': '{"Test": "Test"}'}
 
 
 def test_construct_managed_meta_data_missing_excluded_accounts():
-    event = {"Name": "", "Enabled": True, "InputParameters": {"Test": "Test"}}
+    event = { 
+        "Name": "",
+        "Enabled": True,
+        "InputParameters": {
+            "Test": "Test"
+        }
+    }
     result = construct_managed_meta_data(event=event)
 
     assert result == {"InputParameters": '{"Test": "Test"}'}
