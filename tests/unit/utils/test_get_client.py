@@ -6,5 +6,5 @@ def test_client_with_arn(sts_client):
 
     role_arn = "1234567891010987654321"
     my_client = Client('sts', arn=role_arn)
-    
+
     assert my_client.region == "eu-west-1"
