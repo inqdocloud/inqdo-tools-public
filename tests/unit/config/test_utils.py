@@ -45,7 +45,7 @@ def test_construct_managed_meta_data_fullevent():
 
 
 def test_construct_managed_meta_data_missing_excluded_accounts():
-    event = { 
+    event = {
         "Name": "",
         "Enabled": True,
         "InputParameters": {
