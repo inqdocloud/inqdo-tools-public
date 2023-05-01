@@ -7,7 +7,7 @@ import os
 
 import boto3
 
-if "DEBUG_INQDO_TOOLS" in os.environ.keys(): # pragma: no cover
+if "DEBUG_INQDO_TOOLS" in os.environ.keys():  # pragma: no cover
     from utils.error import ErrorHandler
 else:
     from inqdo_tools.utils.error import ErrorHandler
