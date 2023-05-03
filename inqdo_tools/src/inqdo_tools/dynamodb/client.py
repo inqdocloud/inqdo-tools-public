@@ -46,7 +46,7 @@ class DynamoDBClient(object):
     :param endpoint_url: An optional :class:`endpoint_url` argument, which will determine
         the endpoint_url for DynamoDB
     :type endpoint_url: str, optional
-    
+
     :param arn: An optional argument, which will assume the role of the different account to
         which the DynamoDB client will connect.
     :type arn: str, optional
