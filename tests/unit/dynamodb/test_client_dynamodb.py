@@ -1,4 +1,4 @@
-from inqdo_tools.dynamodb.client import ComparisonOperators, DynamoDBClient
+from dynamodb.client import DynamoDBClient, ComparisonOperators
 
 
 # CREATE AND UPDATE
@@ -195,7 +195,7 @@ def test_client_query_single(
 ):
     ddbclient = DynamoDBClient(
         table_name="players-prd",
-        dynamodb_arn="arn:aws:dynamodb:eu-west-1:123456789012:table/*"
+        arn="arn:aws:iam::123456789012:role/service-role/test-role"
     )
 
     data = ddbclient.query(
@@ -212,7 +212,7 @@ def test_client_query_with_sort_key(
 ):
     ddbclient = DynamoDBClient(
         table_name="players-prd",
-        dynamodb_arn="arn:aws:dynamodb:eu-west-1:123456789012:table/*"
+        arn="arn:aws:iam::123456789012:role/service-role/test-role"
     )
 
     data = ddbclient.query(
@@ -232,7 +232,7 @@ def test_client_query_no_result(
 ):
     ddbclient = DynamoDBClient(
         table_name="players-prd",
-        dynamodb_arn="arn:aws:dynamodb:eu-west-1:123456789012:table/*"
+        arn="arn:aws:iam::123456789012:role/service-role/test-role"
     )
 
     data = ddbclient.query(
@@ -252,7 +252,7 @@ def test_client_query_missing_keys(
 ):
     ddbclient = DynamoDBClient(
         table_name="players-prd",
-        dynamodb_arn="arn:aws:dynamodb:eu-west-1:123456789012:table/*"
+        arn="arn:aws:iam::123456789012:role/service-role/test-role"
     )
 
     data = ddbclient.query(
@@ -269,7 +269,7 @@ def test_client_query_missing_keys(
 def test_put_item(dynamodb_client, dynamodb_client_create_table):
     ddbclient = DynamoDBClient(
         table_name="movies-prd",
-        dynamodb_arn="arn:aws:dynamodb:eu-west-1:123456789012:table/*"
+        arn="arn:aws:iam::123456789012:role/service-role/test-role"
     )
 
     item = {
@@ -289,7 +289,7 @@ def test_put_item(dynamodb_client, dynamodb_client_create_table):
 def test_get_item(dynamodb_client, dynamodb_client_create_table, dynamodb_client_put_item):
     ddbclient = DynamoDBClient(
         table_name="movies-prd",
-        dynamodb_arn="arn:aws:dynamodb:eu-west-1:123456789012:table/*"
+        arn="arn:aws:iam::123456789012:role/service-role/test-role"
     )
 
     data = ddbclient.get_item(
@@ -303,7 +303,7 @@ def test_get_item(dynamodb_client, dynamodb_client_create_table, dynamodb_client
 def test_update_item(dynamodb_client, dynamodb_client_create_table, dynamodb_client_put_item):
     ddbclient = DynamoDBClient(
         table_name="movies-prd",
-        dynamodb_arn="arn:aws:dynamodb:eu-west-1:123456789012:table/*"
+        arn="arn:aws:iam::123456789012:role/service-role/test-role"
     )
 
     Key = {"movieName": "The Dark Knight"}
@@ -328,7 +328,7 @@ def test_update_item(dynamodb_client, dynamodb_client_create_table, dynamodb_cli
 def test_delete_item(dynamodb_client, dynamodb_client_create_table, dynamodb_client_put_item):
     ddbclient = DynamoDBClient(
         table_name="movies-prd",
-        dynamodb_arn="arn:aws:dynamodb:eu-west-1:123456789012:table/*"
+        arn="arn:aws:iam::123456789012:role/service-role/test-role"
     )
 
     data = ddbclient.delete_item(

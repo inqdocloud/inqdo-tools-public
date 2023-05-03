@@ -1,12 +1,26 @@
 import boto3
 import pytest
-from moto import mock_dynamodb
+from moto import mock_dynamodb, mock_sts
 
 
 @pytest.fixture()
 def dynamodb_resource(aws_credentials):
     with mock_dynamodb():
         conn = boto3.resource("dynamodb", region_name="eu-west-1")
+        yield conn
+
+
+@pytest.fixture
+def sts_client(aws_credentials):
+    with mock_sts():
+        conn = boto3.client("sts", region_name="eu-west-1")
+        yield conn
+
+
+@pytest.fixture()
+def dynamodb_client(sts_client):
+    with mock_dynamodb():
+        conn = boto3.client("dynamodb", region_name="eu-west-1")
         yield conn
 
 
@@ -189,13 +203,6 @@ def dynamodb_put_item_with_range(dynamodb_create_table_with_range_key, dynamodb_
         Item={"movieName": "The Dark Knight", "year": "2008", "genre": "action"}
     )
     yield
-
-
-@pytest.fixture()
-def dynamodb_client(aws_credentials):
-    with mock_dynamodb():
-        conn = boto3.client("dynamodb", region_name="eu-west-1")
-        yield conn
 
 
 @pytest.fixture
