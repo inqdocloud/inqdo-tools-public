@@ -246,7 +246,7 @@ def test_client_query_no_result(
     assert data == []
 
 
-# # QUERY CLIENT WITH MISSING KEYS
+# QUERY CLIENT WITH MISSING KEYS
 def test_client_query_missing_keys(
     dynamodb_resource, dynamodb_client_create_table, dynamodb_client_put_item_for_query
 ):

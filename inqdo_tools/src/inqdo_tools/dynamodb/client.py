@@ -296,6 +296,7 @@ class DynamoDBClient(object):
                     KeyConditionExpression=f"{comparison_functions[ComparisonOperators.EQ]} \
                     AND {comparison_functions[comparison_operator]}"
                 )["Items"]
+
                 return self._deserialize(response)
 
             comparison_functions = {
@@ -320,6 +321,7 @@ class DynamoDBClient(object):
                 },
                 KeyConditionExpression=f"{table_primary_key} = :{table_primary_key}"
             )["Items"]
+
             return self._deserialize(response)
 
         return self.table_connection.query(
@@ -483,6 +485,7 @@ class DynamoDBClient(object):
             TableName=self.table_name,
             Key=self._serialize(key),
         )["Item"]
+
         return self._deserialize(response)
 
     def put_item(self, item: dict):
@@ -548,4 +551,5 @@ class DynamoDBClient(object):
             UpdateExpression=update_expression,
             ReturnValues="ALL_NEW"
         )["Attributes"]
+
         return self._deserialize(response)

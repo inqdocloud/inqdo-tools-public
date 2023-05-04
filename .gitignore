@@ -140,5 +140,3 @@ cython_debug/
 .DS_Store
 tests/htmlcov/
 docs/build/
-
-pyrightconfig.json
