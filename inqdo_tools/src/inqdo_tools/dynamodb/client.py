@@ -466,6 +466,7 @@ class DynamoDBClient(object):
             items = []
             for item in response:
                 items.append({k: deserializer.deserialize(v) for k, v in item.items()})
+
             return items
         elif type(response) is dict:
             return {k: deserializer.deserialize(v) for k, v in response.items()}
