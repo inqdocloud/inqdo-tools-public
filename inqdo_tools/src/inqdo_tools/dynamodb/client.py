@@ -101,13 +101,13 @@ class DynamoDBClient(object):
 
         :rtype: dict
         """
-        self.table_connection.put_item(Item=data)
-
         if (self.arn):
             self.dynamodb_client.put_item(
                 TableName=self.table_name,
                 Item=self._serialize(data)
             )
+        else:
+            self.table_connection.put_item(Item=data)
 
         data = {"Success": "Saved or updated item."}
 
@@ -161,12 +161,6 @@ class DynamoDBClient(object):
         """
         update_dict = {table_primary_key: value_primary_key}
 
-        self.table_connection.update_item(
-            Key=update_dict,
-            UpdateExpression=update_expression,
-            ExpressionAttributeValues=expression_values,
-        )
-
         if (self.arn):
             response = self.dynamodb_client.update_item(
                 TableName=self.table_name,
@@ -175,7 +169,14 @@ class DynamoDBClient(object):
                 UpdateExpression=update_expression,
                 ReturnValues="ALL_NEW"
             )["Attributes"]
+
             return self._deserialize(response)
+
+        self.table_connection.update_item(
+            Key=update_dict,
+            UpdateExpression=update_expression,
+            ExpressionAttributeValues=expression_values,
+        )
 
         data = {"Success": "Updated fields."}
 
@@ -206,20 +207,6 @@ class DynamoDBClient(object):
         """
         query_dict = {table_primary_key: value_primary_key}
 
-        if "table_sort_key" and "value_sort_key" in kwargs:
-            table_sort_key, value_sort_key = self._get_sort_key_value_pair(
-                kwargs=kwargs
-            )
-            query_dict[table_sort_key] = value_sort_key
-
-        response = self.table_connection.get_item(Key=query_dict)
-
-        data = (
-            response["Item"]
-            if "Item" in response
-            else f"No items found. Check your request - query: {query_dict}"
-        )
-
         if (self.arn):
             response = self.dynamodb_client.get_item(
                 TableName=self.table_name,
@@ -228,6 +215,20 @@ class DynamoDBClient(object):
 
             data = (
                 self._deserialize(response["Item"])
+                if "Item" in response
+                else f"No items found. Check your request - query: {query_dict}"
+            )
+        else:
+            if "table_sort_key" and "value_sort_key" in kwargs:
+                table_sort_key, value_sort_key = self._get_sort_key_value_pair(
+                    kwargs=kwargs
+                )
+                query_dict[table_sort_key] = value_sort_key
+
+            response = self.table_connection.get_item(Key=query_dict)
+
+            data = (
+                response["Item"]
                 if "Item" in response
                 else f"No items found. Check your request - query: {query_dict}"
             )
@@ -259,19 +260,19 @@ class DynamoDBClient(object):
         """
         deletion_dict = {table_primary_key: value_primary_key}
 
-        if "table_sort_key" and "value_sort_key" in kwargs:
-            table_sort_key, value_sort_key = self._get_sort_key_value_pair(
-                kwargs=kwargs
-            )
-            deletion_dict[table_sort_key] = value_sort_key
-
-        self.table_connection.delete_item(Key=deletion_dict)
-
         if (self.arn):
             self.dynamodb_client.delete_item(
                 TableName=self.table_name,
                 Key=self._serialize(deletion_dict)
             )
+        else:
+            if "table_sort_key" and "value_sort_key" in kwargs:
+                table_sort_key, value_sort_key = self._get_sort_key_value_pair(
+                    kwargs=kwargs
+                )
+                deletion_dict[table_sort_key] = value_sort_key
+
+            self.table_connection.delete_item(Key=deletion_dict)
 
         data = {"Success": "Deleted item from database."}
 
