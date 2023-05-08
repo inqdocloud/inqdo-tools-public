@@ -26,6 +26,26 @@ def test_create_and_update_missing_primary_key(dynamodb_resource, dynamodb_creat
     }
 
 
+# CLIENT CREATE AND UPDATE
+def test_client_create_and_update(dynamodb_client, dynamodb_client_create_table):
+    ddbclient = DynamoDBClient(
+        table_name="movies-prd",
+        arn="arn:aws:iam::123456789012:role/service-role/test-role"
+    )
+
+    item = {
+        "movieName": "The Dark Knight",
+        "year": "2008",
+        "genre": "action"
+    }
+
+    response = ddbclient.create_and_update(
+        data=item
+    )
+
+    assert response == {"Success": "Saved or updated item."}
+
+
 # CREATE AND UPDATE BATCH
 def test_create_and_update_batch(dynamodb_resource, dynamodb_create_table):
 
@@ -65,6 +85,21 @@ def test_delete(dynamodb_resource, dynamodb_create_table, dynamodb_put_item):
 
     data = ddbclient.delete(
         table_primary_key="movieName", value_primary_key="The Dark Knight"
+    )
+
+    assert data == {"Success": "Deleted item from database."}
+
+
+# CLIENT DELETE
+def test_client_delete(dynamodb_client, dynamodb_client_create_table, dynamodb_client_put_item):
+    ddbclient = DynamoDBClient(
+        table_name="movies-prd",
+        arn="arn:aws:iam::123456789012:role/service-role/test-role"
+    )
+
+    data = ddbclient.delete(
+        table_primary_key="movieName",
+        value_primary_key="The Dark Knight"
     )
 
     assert data == {"Success": "Deleted item from database."}
@@ -111,6 +146,21 @@ def test_read_with_sort_key(
     assert data == {"movieName": "The Dark Knight", "year": "2008", "genre": "action"}
 
 
+# CLIENT READ
+def test_client_read(dynamodb_client, dynamodb_client_create_table, dynamodb_client_put_item):
+    ddbclient = DynamoDBClient(
+        table_name="movies-prd",
+        arn="arn:aws:iam::123456789012:role/service-role/test-role"
+    )
+
+    data = ddbclient.read(
+        table_primary_key="movieName",
+        value_primary_key="The Dark Knight"
+    )
+
+    assert data == {"movieName": "The Dark Knight", "year": "2008", "genre": "action"}
+
+
 # READ ALL
 def test_read_all(dynamodb_resource, dynamodb_create_table, dynamodb_put_item):
 
@@ -119,6 +169,27 @@ def test_read_all(dynamodb_resource, dynamodb_create_table, dynamodb_put_item):
     data = ddbclient.read_all()
 
     assert data == [{"movieName": "The Dark Knight", "year": "2008", "genre": "action"}]
+
+
+# CLIENT UPDATE
+def test_client_update(dynamodb_client, dynamodb_client_create_table, dynamodb_client_put_item):
+    ddbclient = DynamoDBClient(
+        table_name="movies-prd",
+        arn="arn:aws:iam::123456789012:role/service-role/test-role"
+    )
+
+    item = {
+        ":value": {"S": "romantic"}
+    }
+
+    data = ddbclient.update(
+        table_primary_key="movieName",
+        value_primary_key="The Dark Knight",
+        update_expression="SET genre = :value",
+        expression_values=item
+    )
+
+    assert data == {"movieName": "The Dark Knight", "year": "2008", "genre": "romantic"}
 
 
 # QUERY
@@ -263,74 +334,3 @@ def test_client_query_missing_keys(
     )
 
     assert data["Error"] == "Something went wrong."
-
-
-# PUT ITEM
-def test_client_create_and_update(dynamodb_client, dynamodb_client_create_table):
-    ddbclient = DynamoDBClient(
-        table_name="movies-prd",
-        arn="arn:aws:iam::123456789012:role/service-role/test-role"
-    )
-
-    item = {
-        "movieName": "The Dark Knight",
-        "year": "2008",
-        "genre": "action"
-    }
-
-    response = ddbclient.create_and_update(
-        data=item
-    )
-
-    assert response == {"Success": "Saved or updated item."}
-
-
-# GET ITEM
-def test_client_read(dynamodb_client, dynamodb_client_create_table, dynamodb_client_put_item):
-    ddbclient = DynamoDBClient(
-        table_name="movies-prd",
-        arn="arn:aws:iam::123456789012:role/service-role/test-role"
-    )
-
-    data = ddbclient.read(
-        table_primary_key="movieName",
-        value_primary_key="The Dark Knight"
-    )
-
-    assert data == {"movieName": "The Dark Knight", "year": "2008", "genre": "action"}
-
-
-# UPDATE ITEM
-def test_client_update(dynamodb_client, dynamodb_client_create_table, dynamodb_client_put_item):
-    ddbclient = DynamoDBClient(
-        table_name="movies-prd",
-        arn="arn:aws:iam::123456789012:role/service-role/test-role"
-    )
-
-    item = {
-        ":value": {"S": "romantic"}
-    }
-
-    data = ddbclient.update(
-        table_primary_key="movieName",
-        value_primary_key="The Dark Knight",
-        update_expression="SET genre = :value",
-        expression_values=item
-    )
-
-    assert data == {"movieName": "The Dark Knight", "year": "2008", "genre": "romantic"}
-
-
-# DELETE ITEM
-def test_client_delete(dynamodb_client, dynamodb_client_create_table, dynamodb_client_put_item):
-    ddbclient = DynamoDBClient(
-        table_name="movies-prd",
-        arn="arn:aws:iam::123456789012:role/service-role/test-role"
-    )
-
-    data = ddbclient.delete(
-        table_primary_key="movieName",
-        value_primary_key="The Dark Knight"
-    )
-
-    assert data == {"Success": "Deleted item from database."}
