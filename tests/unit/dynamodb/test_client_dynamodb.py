@@ -286,7 +286,7 @@ def test_client_create_and_update(dynamodb_client, dynamodb_client_create_table)
 
 
 # GET ITEM
-def test_get_item(dynamodb_client, dynamodb_client_create_table, dynamodb_client_put_item):
+def test_client_read(dynamodb_client, dynamodb_client_create_table, dynamodb_client_put_item):
     ddbclient = DynamoDBClient(
         table_name="movies-prd",
         arn="arn:aws:iam::123456789012:role/service-role/test-role"
