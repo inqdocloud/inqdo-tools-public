@@ -102,6 +102,13 @@ class DynamoDBClient(object):
         :rtype: dict
         """
         self.table_connection.put_item(Item=data)
+
+        if (self.arn):
+            self.dynamodb_client.put_item(
+                TableName=self.table_name,
+                Item=self._serialize(data)
+            )
+
         data = {"Success": "Saved or updated item."}
 
         return data
@@ -152,11 +159,24 @@ class DynamoDBClient(object):
 
         :rtype: dict
         """
+        update_dict = {table_primary_key: value_primary_key}
+
         self.table_connection.update_item(
-            Key={table_primary_key: value_primary_key},
+            Key=update_dict,
             UpdateExpression=update_expression,
             ExpressionAttributeValues=expression_values,
         )
+
+        if (self.arn):
+            response = self.dynamodb_client.update_item(
+                TableName=self.table_name,
+                Key=self._serialize(update_dict),
+                ExpressionAttributeValues=expression_values,
+                UpdateExpression=update_expression,
+                ReturnValues="ALL_NEW"
+            )["Attributes"]
+            return self._deserialize(response)
+
         data = {"Success": "Updated fields."}
 
         return data
@@ -200,6 +220,18 @@ class DynamoDBClient(object):
             else f"No items found. Check your request - query: {query_dict}"
         )
 
+        if (self.arn):
+            response = self.dynamodb_client.get_item(
+                TableName=self.table_name,
+                Key=self._serialize(query_dict),
+            )
+
+            data = (
+                self._deserialize(response["Item"])
+                if "Item" in response
+                else f"No items found. Check your request - query: {query_dict}"
+            )
+
         return data
 
     @ErrorHandler.base_exception
@@ -234,6 +266,13 @@ class DynamoDBClient(object):
             deletion_dict[table_sort_key] = value_sort_key
 
         self.table_connection.delete_item(Key=deletion_dict)
+
+        if (self.arn):
+            self.dynamodb_client.delete_item(
+                TableName=self.table_name,
+                Key=self._serialize(deletion_dict)
+            )
+
         data = {"Success": "Deleted item from database."}
 
         return data
@@ -472,85 +511,3 @@ class DynamoDBClient(object):
             return {k: deserializer.deserialize(v) for k, v in response.items()}
         else:
             return deserializer.deserialize(response)
-
-    def get_item(self, key: dict):
-        """Get item in database
-
-        :param key: Expects the key of the item to get from the table.
-        :type key: dict
-
-        :rtype: dict
-        """
-
-        response = self.dynamodb_client.get_item(
-            TableName=self.table_name,
-            Key=self._serialize(key),
-        )["Item"]
-
-        return self._deserialize(response)
-
-    def put_item(self, item: dict):
-        """Put item in database
-
-        :param item: Expects the item to add to the table.
-        :type item: dict
-
-        :rtype: int
-        """
-
-        response = self.dynamodb_client.put_item(
-            TableName=self.table_name,
-            Item=self._serialize(item)
-        )["ResponseMetadata"]["HTTPStatusCode"]
-
-        return response
-
-    def delete_item(self, key: dict):
-        """Delete item from database
-
-        :param key: Expects the key of the item to delete from the table.
-        :type key: dict
-
-        :rtype: int
-        """
-
-        response = self.dynamodb_client.delete_item(
-            TableName=self.table_name,
-            Key=self._serialize(key)
-        )["ResponseMetadata"]["HTTPStatusCode"]
-
-        return response
-
-    def update_item(
-        self,
-        key: dict,
-        expression_attribute_names: dict,
-        expression_attribute_values: dict,
-        update_expression: str
-    ):
-        """Update item in database
-
-        :param key: Expects the key of the item to update in the table.
-        :type key: dict
-
-        :param expression_attribute_names: Expects one or more substitution tokens for attribute names in an expression.
-        :type expression_attribute_names: dict
-
-        :param expression_attribute_values: Expects one or more values that can be substituted in an expression.
-        :type expression_attribute_values: dict
-
-        :param update_expression: Expects an expression that defines one or more attributes to be updated, the action
-        to be performed on them, and new values for them.
-        :type update_expression: dict
-        """
-
-        response = self.dynamodb_client.update_item(
-            TableName=self.table_name,
-            Key=self._serialize(key),
-            ExpressionAttributeNames=expression_attribute_names,
-            ExpressionAttributeValues=expression_attribute_values,
-            UpdateExpression=update_expression,
-            ReturnValues="ALL_NEW"
-        )["Attributes"]
-
-        return self._deserialize(response)

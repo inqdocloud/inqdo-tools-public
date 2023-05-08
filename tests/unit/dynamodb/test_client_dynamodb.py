@@ -266,7 +266,7 @@ def test_client_query_missing_keys(
 
 
 # PUT ITEM
-def test_put_item(dynamodb_client, dynamodb_client_create_table):
+def test_client_create_and_update(dynamodb_client, dynamodb_client_create_table):
     ddbclient = DynamoDBClient(
         table_name="movies-prd",
         arn="arn:aws:iam::123456789012:role/service-role/test-role"
@@ -278,11 +278,11 @@ def test_put_item(dynamodb_client, dynamodb_client_create_table):
         "genre": "action"
     }
 
-    response = ddbclient.put_item(
-        item=item
+    response = ddbclient.create_and_update(
+        data=item
     )
 
-    assert response == 200
+    assert response == {"Success": "Saved or updated item."}
 
 
 # GET ITEM
@@ -292,47 +292,45 @@ def test_get_item(dynamodb_client, dynamodb_client_create_table, dynamodb_client
         arn="arn:aws:iam::123456789012:role/service-role/test-role"
     )
 
-    data = ddbclient.get_item(
-        key={"movieName": "The Dark Knight"}
+    data = ddbclient.read(
+        table_primary_key="movieName",
+        value_primary_key="The Dark Knight"
     )
 
     assert data == {"movieName": "The Dark Knight", "year": "2008", "genre": "action"}
 
 
 # UPDATE ITEM
-def test_update_item(dynamodb_client, dynamodb_client_create_table, dynamodb_client_put_item):
+def test_client_update(dynamodb_client, dynamodb_client_create_table, dynamodb_client_put_item):
     ddbclient = DynamoDBClient(
         table_name="movies-prd",
         arn="arn:aws:iam::123456789012:role/service-role/test-role"
     )
 
-    Key = {"movieName": "The Dark Knight"}
-    expression_attribute_names = {'#KEY': 'genre'}
-    expression_attribute_values = {
-        ':value': {
-            'S': 'romantic',
-        },
+    item = {
+        ":value": {"S": "romantic"}
     }
-    update_expression = 'SET #KEY = :value'
-    data = ddbclient.update_item(
-        key=Key,
-        expression_attribute_names=expression_attribute_names,
-        expression_attribute_values=expression_attribute_values,
-        update_expression=update_expression
+
+    data = ddbclient.update(
+        table_primary_key="movieName",
+        value_primary_key="The Dark Knight",
+        update_expression="SET genre = :value",
+        expression_values=item
     )
 
     assert data == {"movieName": "The Dark Knight", "year": "2008", "genre": "romantic"}
 
 
 # DELETE ITEM
-def test_delete_item(dynamodb_client, dynamodb_client_create_table, dynamodb_client_put_item):
+def test_client_delete(dynamodb_client, dynamodb_client_create_table, dynamodb_client_put_item):
     ddbclient = DynamoDBClient(
         table_name="movies-prd",
         arn="arn:aws:iam::123456789012:role/service-role/test-role"
     )
 
-    data = ddbclient.delete_item(
-        key={"movieName": "The Dark Knight"}
+    data = ddbclient.delete(
+        table_primary_key="movieName",
+        value_primary_key="The Dark Knight"
     )
 
-    assert data == 200
+    assert data == {"Success": "Deleted item from database."}
