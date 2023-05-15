@@ -8,6 +8,8 @@ from enum import Enum
 
 import boto3
 from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
+from inqdo_tools.utils.get_client import Client
 
 if "DEBUG_INQDO_TOOLS" in os.environ.keys():
     from utils.common import destruct_dict
@@ -41,9 +43,13 @@ class DynamoDBClient(object):
         revert to the default, which is eu-west-1.
     :type region_name: str, optional
 
-    :param dynamodb_arn: An optional :class:`dynamodb_arn` argument, which will determine
+    :param endpoint_url: An optional :class:`endpoint_url` argument, which will determine
         the endpoint_url for DynamoDB
-    :type dynamodb_arn: str, optional
+    :type endpoint_url: str, optional
+
+    :param arn: An optional argument, which will assume the role of the different account to
+        which the DynamoDB client will connect.
+    :type arn: str, optional
 
     :rtype: dict
     """
@@ -53,28 +59,36 @@ class DynamoDBClient(object):
 
         # Default region
         self.region_name = "eu-west-1"
-        self.dynamodb_arn = False
+        self.endpoint_url = False
+        self.arn = False
 
         if len(kwargs.items()) > 0:
             for key, value in kwargs.items():
                 if key == "region_name":
                     self.region_name = value
-                if key == "dynamodb_arn":
-                    self.dynamodb_arn = value
+                if key == "endpoint_url":
+                    self.endpoint_url = value
+                if key == "arn":
+                    self.arn = value
 
         # Test if table exists, otherwise throw a value error
         test_table_exists = boto3.client("dynamodb", region_name=self.region_name)
         try:
             test_table_exists.describe_table(TableName=table_name)
+            self.table_name = table_name
         except test_table_exists.exceptions.ResourceNotFoundException:
             raise ValueError(
                 f"Table: '{table_name}' does not exist. Did you create one yet and are you in the correct region?"
             )
 
-        if self.dynamodb_arn:
-            self.dynamodb = boto3.resource("dynamodb", region_name=self.region_name, endpoint_url=self.dynamodb_arn)
+        if self.arn:
+            self.dynamodb_client = Client("dynamodb", region=self.region_name, arn=self.arn).service
+
+        if self.endpoint_url:
+            self.dynamodb = boto3.resource("dynamodb", region_name=self.region_name, endpoint_url=self.endpoint_url)
         else:
             self.dynamodb = boto3.resource("dynamodb", region_name=self.region_name)
+
         self.table_connection = self.dynamodb.Table(table_name)
 
     @ErrorHandler.base_exception
@@ -87,7 +101,14 @@ class DynamoDBClient(object):
 
         :rtype: dict
         """
-        self.table_connection.put_item(Item=data)
+        if (self.arn):
+            self.dynamodb_client.put_item(
+                TableName=self.table_name,
+                Item=self._serialize(data)
+            )
+        else:
+            self.table_connection.put_item(Item=data)
+
         data = {"Success": "Saved or updated item."}
 
         return data
@@ -138,11 +159,25 @@ class DynamoDBClient(object):
 
         :rtype: dict
         """
+        update_dict = {table_primary_key: value_primary_key}
+
+        if (self.arn):
+            response = self.dynamodb_client.update_item(
+                TableName=self.table_name,
+                Key=self._serialize(update_dict),
+                ExpressionAttributeValues=expression_values,
+                UpdateExpression=update_expression,
+                ReturnValues="ALL_NEW"
+            )["Attributes"]
+
+            return self._deserialize(response)
+
         self.table_connection.update_item(
-            Key={table_primary_key: value_primary_key},
+            Key=update_dict,
             UpdateExpression=update_expression,
             ExpressionAttributeValues=expression_values,
         )
+
         data = {"Success": "Updated fields."}
 
         return data
@@ -172,19 +207,31 @@ class DynamoDBClient(object):
         """
         query_dict = {table_primary_key: value_primary_key}
 
-        if "table_sort_key" and "value_sort_key" in kwargs:
-            table_sort_key, value_sort_key = self._get_sort_key_value_pair(
-                kwargs=kwargs
+        if (self.arn):
+            response = self.dynamodb_client.get_item(
+                TableName=self.table_name,
+                Key=self._serialize(query_dict),
             )
-            query_dict[table_sort_key] = value_sort_key
 
-        response = self.table_connection.get_item(Key=query_dict)
+            data = (
+                self._deserialize(response["Item"])
+                if "Item" in response
+                else f"No items found. Check your request - query: {query_dict}"
+            )
+        else:
+            if "table_sort_key" and "value_sort_key" in kwargs:
+                table_sort_key, value_sort_key = self._get_sort_key_value_pair(
+                    kwargs=kwargs
+                )
+                query_dict[table_sort_key] = value_sort_key
 
-        data = (
-            response["Item"]
-            if "Item" in response
-            else f"No items found. Check your request - query: {query_dict}"
-        )
+            response = self.table_connection.get_item(Key=query_dict)
+
+            data = (
+                response["Item"]
+                if "Item" in response
+                else f"No items found. Check your request - query: {query_dict}"
+            )
 
         return data
 
@@ -213,13 +260,20 @@ class DynamoDBClient(object):
         """
         deletion_dict = {table_primary_key: value_primary_key}
 
-        if "table_sort_key" and "value_sort_key" in kwargs:
-            table_sort_key, value_sort_key = self._get_sort_key_value_pair(
-                kwargs=kwargs
+        if (self.arn):
+            self.dynamodb_client.delete_item(
+                TableName=self.table_name,
+                Key=self._serialize(deletion_dict)
             )
-            deletion_dict[table_sort_key] = value_sort_key
+        else:
+            if "table_sort_key" and "value_sort_key" in kwargs:
+                table_sort_key, value_sort_key = self._get_sort_key_value_pair(
+                    kwargs=kwargs
+                )
+                deletion_dict[table_sort_key] = value_sort_key
 
-        self.table_connection.delete_item(Key=deletion_dict)
+            self.table_connection.delete_item(Key=deletion_dict)
+
         data = {"Success": "Deleted item from database."}
 
         return data
@@ -269,6 +323,22 @@ class DynamoDBClient(object):
             value_primary_key = kwargs["value_primary_key"]
             comparison_operator = kwargs["comparison_operator"]
 
+            if (self.arn):
+                comparison_functions = {
+                    ComparisonOperators.EQ: f"{table_primary_key} = {value_primary_key}",
+                    ComparisonOperators.LT: f"{table_sort_key} < {query_value}",
+                    ComparisonOperators.LE: f"{table_sort_key} <= {query_value}",
+                    ComparisonOperators.GE: f"{table_sort_key} >= {query_value}",
+                    ComparisonOperators.GT: f"{table_sort_key} > {query_value}",
+                }
+                response = self.dynamodb_client.query(
+                    TableName=self.table_name,
+                    KeyConditionExpression=f"{comparison_functions[ComparisonOperators.EQ]} \
+                    AND {comparison_functions[comparison_operator]}"
+                )["Items"]
+
+                return self._deserialize(response)
+
             comparison_functions = {
                 ComparisonOperators.EQ: Key(f"{table_primary_key}").eq(
                     f"{value_primary_key}"
@@ -282,6 +352,17 @@ class DynamoDBClient(object):
                 KeyConditionExpression=comparison_functions[ComparisonOperators.EQ]
                 & comparison_functions[comparison_operator],
             )["Items"]
+
+        if (self.arn):
+            response = self.dynamodb_client.query(
+                TableName=self.table_name,
+                ExpressionAttributeValues={
+                    f":{table_primary_key}": self._serialize(query_value)
+                },
+                KeyConditionExpression=f"{table_primary_key} = :{table_primary_key}"
+            )["Items"]
+
+            return self._deserialize(response)
 
         return self.table_connection.query(
             ExpressionAttributeValues={
@@ -409,3 +490,25 @@ class DynamoDBClient(object):
         )
 
         return destructed_kwargs
+
+    @staticmethod
+    def _serialize(object):
+        serializer = TypeSerializer()
+        if type(object) is dict:
+            return {k: serializer.serialize(v) for k, v in object.items()}
+        else:
+            return serializer.serialize(object)
+
+    @staticmethod
+    def _deserialize(response):
+        deserializer = TypeDeserializer()
+        if type(response) is list:
+            items = []
+            for item in response:
+                items.append({k: deserializer.deserialize(v) for k, v in item.items()})
+
+            return items
+        elif type(response) is dict:
+            return {k: deserializer.deserialize(v) for k, v in response.items()}
+        else:
+            return deserializer.deserialize(response)
