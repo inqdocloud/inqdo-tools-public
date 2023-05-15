@@ -11,7 +11,7 @@ from boto3.dynamodb.conditions import Key
 from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
 from inqdo_tools.utils.get_client import Client
 
-if "DEBUG_INQDO_TOOLS" in os.environ.keys():
+if "DEBUG_INQDO_TOOLS" in os.environ.keys():  # pragma: no cover
     from utils.common import destruct_dict
     from utils.error import ErrorHandler
 else:

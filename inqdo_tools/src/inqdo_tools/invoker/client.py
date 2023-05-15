@@ -14,7 +14,7 @@ from typing import Callable
 
 from botocore.exceptions import ClientError
 
-if "DEBUG_INQDO_TOOLS" in os.environ.keys():
+if "DEBUG_INQDO_TOOLS" in os.environ.keys():  # pragma: no cover
     from utils.policy_generator import PolicyGenerator
     from utils.response import Response
 else:

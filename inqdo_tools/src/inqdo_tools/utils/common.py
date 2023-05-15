@@ -12,7 +12,7 @@ from functools import reduce
 from operator import itemgetter
 from typing import Any, List, Tuple, Union
 
-if "DEBUG_INQDO_TOOLS" in os.environ.keys():
+if "DEBUG_INQDO_TOOLS" in os.environ.keys():  # pragma: no cover
     from utils.error import ErrorHandler
     from utils.json import Json
 else:

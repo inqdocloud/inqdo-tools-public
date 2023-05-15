@@ -1,7 +1,7 @@
 import datetime
 import os
 
-if "DEBUG_INQDO_TOOLS" in os.environ.keys():
+if "DEBUG_INQDO_TOOLS" in os.environ.keys():  # pragma: no cover
     from utils.get_client import Client
 else:
     from inqdo_tools.utils.get_client import Client
