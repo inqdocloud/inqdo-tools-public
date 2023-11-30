@@ -25,7 +25,7 @@ class InQdoWatcher(object):
         self.reload_containers = environ.get("RELOAD_CONTAINERS")
 
     def event_handler_factory(
-        self, *args, patterns=["*.py"], ignore_directories=True, **kwargs
+        self, *args, patterns=["*.py", "*.ts", "*.js", "*.tsx"], ignore_directories=True, **kwargs
     ):
         event_handler = PatternMatchingEventHandler(
             *args, patterns=patterns, ignore_directories=ignore_directories, **kwargs

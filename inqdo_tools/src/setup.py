@@ -4,7 +4,7 @@ setup(
     name="inqdo-tools",
     description="InQdo Tools Python library",
     url="https://github.com/inqdocloud/inqdo-tools-public",
-    version="1.4.0",
+    version="1.3.7",
     author="InQdo",
     license='LICENSE.txt',
     author_email="barry.buitelaar@inqdo.com",

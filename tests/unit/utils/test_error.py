@@ -35,25 +35,25 @@ class ErrorHandlerTest(object):
 def test_key_error_handler():
     result = ErrorHandlerTest().test_base_exception_key_error()
 
-    assert type(result["Message"]) == KeyError
+    assert isinstance(result["Message"], KeyError)
 
 
 def test_type_error_client_handler():
     result = ErrorHandlerTest().test_base_exception_type_error()
 
-    assert type(result["Message"]) == TypeError
+    assert isinstance(result["Message"], TypeError)
 
 
 def test_no_region_error_handler():
     result = ErrorHandlerTest().test_base_exception_no_region_error()
 
-    assert type(result["Message"]) == NoRegionError
+    assert isinstance(result["Message"], NoRegionError)
 
 
 def test_param_validation_error_handler():
     result = ErrorHandlerTest().test_base_exception_param_validation_error()
 
-    assert type(result["Message"]) == ParamValidationError
+    assert isinstance(result["Message"], ParamValidationError)
 
 
 def test_param_exception_error_handler():

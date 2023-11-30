@@ -134,7 +134,7 @@ class Invoker(object):
                 if self.event["body"] not in ["None", None]:
                     try:
                         loaded_json = json.loads(self.event["body"])
-                        if type(loaded_json) == str:
+                        if isinstance(loaded_json, str):
                             self.body = json.loads(loaded_json)
                         else:
                             self.body = loaded_json

@@ -224,7 +224,7 @@ def _get_key_value(data: dict, key: str):
                     get = data.get(k, None)
                 else:
                     get = obj.get(k, None)
-                if type(get) == dict:
+                if isinstance(get, dict):
                     obj = get
                 else:
                     v = obj[last_key]

@@ -123,7 +123,7 @@ def dict_get(dictionary: dict, keys: list, default=None) -> Union[dict, Any]:
 def from_json(s: str) -> dict:
     loaded = json.loads(s)
 
-    if type(loaded) == str:
+    if isinstance(loaded, str):
         loaded = json.loads(loaded)
 
     return loaded
